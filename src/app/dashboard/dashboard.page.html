@@ -1,0 +1,93 @@
+<ion-header [translucent]="true" class="water-header">
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="water-outline" class="title-icon"></ion-icon>
+      Aqualife
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <ion-row>
+
+      <ion-col size="12" size-md="4">
+        <ion-card class="metric-card" 
+                  [ngClass]="getStatusTemperatura()" 
+                  (click)="toggleGrafico('Temperatura')" button>
+          <ion-ripple-effect></ion-ripple-effect>
+          <ion-card-header>
+            <ion-icon name="thermometer-outline"></ion-icon>
+            <ion-card-title>Temperatura</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div *ngIf="isLoading; else dadosTemperatura">
+              <ion-skeleton-text animated class="metric-value-skeleton"></ion-skeleton-text>
+            </div>
+            <ng-template #dadosTemperatura>
+              <div class="metric-value">{{ temperatura }} °C</div>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
+
+        <div class="chart-container" [class.expanded]="graficoVisivel === 'Temperatura'">
+          <div class="chart-wrapper">
+            <canvas #chartTemperatura></canvas>
+          </div>
+        </div>
+      </ion-col>
+
+      <ion-col size="12" size-md="4">
+        <ion-card class="metric-card" 
+                  [ngClass]="getStatusPH()" 
+                  (click)="toggleGrafico('pH')" button>
+          <ion-ripple-effect></ion-ripple-effect>
+          <ion-card-header>
+            <ion-icon name="analytics-outline"></ion-icon>
+            <ion-card-title>Nível de pH</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div *ngIf="isLoading; else dadosPH">
+              <ion-skeleton-text animated class="metric-value-skeleton"></ion-skeleton-text>
+            </div>
+            <ng-template #dadosPH>
+              <div class="metric-value">{{ ph }}</div>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
+
+        <div class="chart-container" [class.expanded]="graficoVisivel === 'pH'">
+          <div class="chart-wrapper">
+            <canvas #chartPH></canvas>
+          </div>
+        </div>
+      </ion-col> <ion-col size="12" size-md="4">
+        <ion-card class="metric-card" 
+                  [ngClass]="getStatusTurbidez()" 
+                  (click)="toggleGrafico('Turbidez')" button>
+          <ion-ripple-effect></ion-ripple-effect>
+          <ion-card-header>
+            <ion-icon name="contrast-outline"></ion-icon>
+            <ion-card-title>Turbidez</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div *ngIf="isLoading; else dadosTurbidez">
+              <ion-skeleton-text animated class="metric-value-skeleton"></ion-skeleton-text>
+            </div>
+            <ng-template #dadosTurbidez>
+              <div class="metric-value">{{ turbidez }} <span class="unit">NTU</span></div>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
+
+        <div class="chart-container" [class.expanded]="graficoVisivel === 'Turbidez'">
+          <div class="chart-wrapper">
+            <canvas #chartTurbidez></canvas>
+          </div>
+        </div>
+      </ion-col> </ion-row>
+  </ion-grid>
+</ion-content>

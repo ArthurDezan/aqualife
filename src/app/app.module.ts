@@ -6,6 +6,8 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+import { Chart } from 'chart.js/auto'; 
+Chart.register();
 
 @NgModule({
   declarations: [AppComponent],

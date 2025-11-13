@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ titulo }}</ion-title>
+    
+    <ion-buttons slot="end">
+      <ion-button (click)="fechar()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="chart-container">
+    <canvas #chartCanvas></canvas>
+  </div>
+</ion-content>
