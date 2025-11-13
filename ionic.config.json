@@ -1,0 +1,7 @@
+{
+  "name": "aqualife",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
