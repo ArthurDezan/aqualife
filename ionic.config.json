@@ -1,7 +1,8 @@
 {
   "name": "aqualife",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {}
   },
   "type": "angular"
 }
