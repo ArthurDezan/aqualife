@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Chart } from 'chart.js/auto';
-import { ApiService } from '../services/api.service'; // Importar o serviço
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,21 +13,18 @@ export class DashboardPage implements OnInit, OnDestroy {
   isLoading: boolean = true;
   graficoVisivel: string | null = null;
 
-  // Variáveis com os valores atuais (exibidos nos cards)
-  temperatura: number = 0;
+  // Variáveis atuais (Temperatura removida)
   ph: number = 0;
   turbidez: number = 0;
 
-  // Histórico para os gráficos (Armazena os últimos 10 valores)
-  histTemperatura: number[] = [];
+  // Histórico para os gráficos (Temperatura removida)
   histPH: number[] = [];
   histTurbidez: number[] = [];
-  labelsTempo: string[] = []; // Horários das leituras
+  labelsTempo: string[] = [];
 
-  // Controle do intervalo de atualização
   private updateInterval: any;
 
-  @ViewChild('chartTemperatura') chartTemperaturaCanvas: ElementRef | undefined;
+  // Referência ao canvas de Temperatura removida
   @ViewChild('chartPH') chartPHCanvas: ElementRef | undefined;
   @ViewChild('chartTurbidez') chartTurbidezCanvas: ElementRef | undefined;
   
@@ -39,7 +36,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.carregarDadosIniciais();
   }
 
-  // Quando sair da página, paramos a atualização para economizar bateria
   ngOnDestroy() {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
@@ -48,11 +44,7 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   carregarDadosIniciais() {
     this.isLoading = true;
-    
-    // 1. Busca imediata
     this.buscarDadosApi();
-
-    // 2. Agenda a atualização a cada 7 segundos
     this.updateInterval = setInterval(() => {
       this.buscarDadosApi();
     }, 7000);
@@ -62,44 +54,36 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.apiService.getDadosSensores().subscribe({
       next: (dados: any) => {
         
-        // 1. Verifica se recebemos uma lista com dados
         if (Array.isArray(dados) && dados.length > 0) {
           
-          // 2. Pega o ÚLTIMO item da lista (o mais recente)
           const leituraAtual = dados[dados.length - 1];
-
           console.log('🔍 Leitura Processada:', leituraAtual);
 
-          // 3. Atualiza os valores atuais
-          this.temperatura = Number(leituraAtual.temperatura);
-          this.ph = Number(leituraAtual.PH); // 'PH' maiúsculo conforme a API
-          
-          // AQUI ESTÁ A CORREÇÃO: Usamos 'umidade' no lugar de turbidez
+          // Atualiza valores atuais
+          this.ph = Number(leituraAtual.PH); 
           this.turbidez = Number(leituraAtual.umidade || 0);
 
-          // 4. Atualiza o Histórico (últimos 10) para o gráfico
+          // Atualiza Histórico
           const ultimos10 = dados.slice(-10);
           
-          this.histTemperatura = ultimos10.map((d: any) => Number(d.temperatura));
           this.histPH = ultimos10.map((d: any) => Number(d.PH));
-          this.histTurbidez = ultimos10.map((d: any) => Number(d.umidade || 0)); // Gráfico também usa umidade
+          this.histTurbidez = ultimos10.map((d: any) => Number(d.umidade || 0));
           
-          // 5. Gera horários para o eixo X do gráfico
+          // Eixo X (Horários)
           const agora = new Date();
           const horaString = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
           
-          // Garante que temos labels suficientes para os dados
-          if (this.labelsTempo.length !== this.histTemperatura.length) {
-             this.labelsTempo = new Array(this.histTemperatura.length).fill(horaString);
+          // Verifica se precisa preencher labels com base no tamanho do histórico de PH
+          if (this.labelsTempo.length !== this.histPH.length) {
+             this.labelsTempo = new Array(this.histPH.length).fill(horaString);
           }
 
         } else {
-          console.warn('⚠️ A API retornou uma lista vazia ou formato inválido:', dados);
+          console.warn('⚠️ Lista vazia ou formato inválido:', dados);
         }
 
         this.isLoading = false;
 
-        // 6. Se algum gráfico estiver aberto, atualiza visualmente
         if (this.graficoVisivel) {
           this.atualizarGraficoAberto();
         }
@@ -111,40 +95,30 @@ export class DashboardPage implements OnInit, OnDestroy {
     });
   }
 
-  atualizarHistorico(temp: number, ph: number, turb: number) {
+  // Função auxiliar caso precises adicionar manualmente (opcional)
+  atualizarHistorico(ph: number, turb: number) {
     const agora = new Date();
     const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    // Adiciona novos dados
-    this.histTemperatura.push(temp);
     this.histPH.push(ph);
     this.histTurbidez.push(turb);
     this.labelsTempo.push(horaFormatada);
 
-    // Mantém apenas os últimos 10 registros para o gráfico não ficar gigante
-    if (this.histTemperatura.length > 10) {
-      this.histTemperatura.shift();
+    if (this.histPH.length > 10) {
       this.histPH.shift();
       this.histTurbidez.shift();
       this.labelsTempo.shift();
     }
   }
 
-  // Atualiza apenas o gráfico que está visível na tela sem recriá-lo
   atualizarGraficoAberto() {
     const metrica = this.graficoVisivel;
     if (!metrica || !this.chartInstances[metrica]) return;
 
     const chart = this.chartInstances[metrica];
-    
-    // Atualiza as labels (eixo X)
     chart.data.labels = this.labelsTempo;
 
-    // Atualiza os dados (eixo Y)
     switch (metrica) {
-      case 'Temperatura':
-        chart.data.datasets[0].data = this.histTemperatura;
-        break;
       case 'pH':
         chart.data.datasets[0].data = this.histPH;
         break;
@@ -153,15 +127,12 @@ export class DashboardPage implements OnInit, OnDestroy {
         break;
     }
     
-    chart.update(); // Mágica do Chart.js para animar a mudança
+    chart.update();
   }
 
-  // --- Funções de Status (Mantidas) ---
-  getStatusTemperatura() {
-    if (this.temperatura < 18 || this.temperatura > 28) { return 'perigo'; }
-    if (this.temperatura < 21 || this.temperatura > 26) { return 'atencao'; }
-    return 'bom';
-  }
+  // --- Funções de Status ---
+  // getStatusTemperatura REMOVIDO
+
   getStatusPH() {
     if (this.ph < 6.5 || this.ph > 8.0) { return 'perigo'; }
     if (this.ph < 7.0 || this.ph > 7.6) { return 'atencao'; }
@@ -173,7 +144,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     return 'bom';
   }
 
-  // --- Lógica de Toggle (Ajustada para usar o histórico real) ---
   toggleGrafico(metrica: string) {
     const metricaSendoAberta = metrica;
     const metricaAbertaAtualmente = this.graficoVisivel;
@@ -197,7 +167,6 @@ export class DashboardPage implements OnInit, OnDestroy {
 
     this.graficoVisivel = metricaSendoAberta;
     
-    // Pequeno delay para garantir que o DOM (HTML) atualizou e o Canvas está visível
     setTimeout(() => {
         this.criarGrafico(metricaSendoAberta);
     }, 50);
@@ -210,12 +179,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     let corFundo = 'rgba(0, 121, 107, 0.2)';
 
     switch (metrica) {
-      case 'Temperatura':
-        canvas = this.chartTemperaturaCanvas;
-        dadosParaUsar = this.histTemperatura;
-        corBorda = '#0288D1'; 
-        corFundo = 'rgba(2, 136, 209, 0.2)';
-        break;
+      // Case 'Temperatura' REMOVIDO
       case 'pH':
         canvas = this.chartPHCanvas;
         dadosParaUsar = this.histPH;
@@ -236,10 +200,10 @@ export class DashboardPage implements OnInit, OnDestroy {
     const chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: this.labelsTempo, // Usa os horários reais
+        labels: this.labelsTempo,
         datasets: [{
           label: metrica,
-          data: dadosParaUsar, // Usa o histórico acumulado
+          data: dadosParaUsar,
           fill: true,
           backgroundColor: corFundo,
           borderColor: corBorda,
@@ -250,7 +214,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       options: {
         animation: false,
         responsive: true,
-        maintainAspectRatio: false, // Importante para caber na div expandida
+        maintainAspectRatio: false,
         scales: { y: { beginAtZero: false } }
       }
     });
