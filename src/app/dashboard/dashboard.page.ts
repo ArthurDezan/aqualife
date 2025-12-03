@@ -13,21 +13,18 @@ export class DashboardPage implements OnInit, OnDestroy {
   isLoading: boolean = true;
   graficoVisivel: string | null = null;
 
-  // Variáveis atuais (Temperatura removida)
   ph: number = 0;
   turbidez: number = 0;
 
-  // Histórico para os gráficos (Temperatura removida)
   histPH: number[] = [];
   histTurbidez: number[] = [];
   labelsTempo: string[] = [];
 
   private updateInterval: any;
 
-  // Referência ao canvas de Temperatura removida
   @ViewChild('chartPH') chartPHCanvas: ElementRef | undefined;
   @ViewChild('chartTurbidez') chartTurbidezCanvas: ElementRef | undefined;
-  
+
   private chartInstances: { [key: string]: Chart } = {};
 
   constructor(private apiService: ApiService) { }
@@ -50,36 +47,78 @@ export class DashboardPage implements OnInit, OnDestroy {
     }, 7000);
   }
 
+  // --- NOVA FUNÇÃO "BLINDADA" PARA CONVERTER DATAS ---
+  private converterParaTimestamp(item: any): number {
+    let valorData = item.timestamp; // ← Sua API sempre envia "timestamp"
+
+    if (!valorData || typeof valorData !== "string") {
+      // fallback pelo ObjectId do MongoDB
+      if (item._id) {
+        try {
+          return parseInt(item._id.substring(0, 8), 16) * 1000;
+        } catch (e) { return 0; }
+      }
+      return 0;
+    }
+
+    // Formato 100% compatível com sua API
+    // Ex: "03/12/2025, 08:10:43"
+    const regex = /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
+    const partes = valorData.match(regex);
+
+    if (!partes) return 0;
+
+    const dia = Number(partes[1]);
+    const mes = Number(partes[2]) - 1; // JS começa o mês no zero
+    const ano = Number(partes[3]);
+    const hora = Number(partes[4]);
+    const min = Number(partes[5]);
+    const seg = Number(partes[6]);
+
+    return new Date(ano, mes, dia, hora, min, seg).getTime();
+  }
+
   buscarDadosApi() {
     this.apiService.getDadosSensores().subscribe({
       next: (dados: any) => {
-        
+
         if (Array.isArray(dados) && dados.length > 0) {
-          
+
+          // Debug para ver o que está a acontecer
+          // console.log('Dado Bruto (Antes de ordenar):', dados[0]);
+
+          // --- ORDENAÇÃO ---
+          dados.sort((a: any, b: any) =>
+            this.converterParaTimestamp(a) - this.converterParaTimestamp(b)
+          );
+          // -----------------
+
           const leituraAtual = dados[dados.length - 1];
-          console.log('🔍 Leitura Processada:', leituraAtual);
+          console.log('✅ Leitura Mais Recente (Final):', leituraAtual);
 
-          // Atualiza valores atuais
-          this.ph = Number(leituraAtual.PH); 
-          this.turbidez = Number(leituraAtual.umidade || 0);
+          this.ph = Number(leituraAtual.PH);
+          this.turbidez = Number(leituraAtual.turbidez || 0);
 
-          // Atualiza Histórico
           const ultimos10 = dados.slice(-10);
-          
+
           this.histPH = ultimos10.map((d: any) => Number(d.PH));
-          this.histTurbidez = ultimos10.map((d: any) => Number(d.umidade || 0));
-          
-          // Eixo X (Horários)
-          const agora = new Date();
-          const horaString = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-          
-          // Verifica se precisa preencher labels com base no tamanho do histórico de PH
-          if (this.labelsTempo.length !== this.histPH.length) {
-             this.labelsTempo = new Array(this.histPH.length).fill(horaString);
-          }
+          this.histTurbidez = ultimos10.map((d: any) => Number(d.turbidez || 0));
+
+          // Usar a data real da API
+          this.labelsTempo = ultimos10.map((d: any) => {
+            const regex = /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2})/;
+            const partes = d.timestamp.match(regex);
+
+            if (partes) {
+              return `${partes[1]}/${partes[2]} ${partes[4]}:${partes[5]}`;
+              // ex: "03/12 08:10"
+            }
+
+            return '';
+          });
 
         } else {
-          console.warn('⚠️ Lista vazia ou formato inválido:', dados);
+          console.warn('⚠️ Lista vazia:', dados);
         }
 
         this.isLoading = false;
@@ -89,13 +128,14 @@ export class DashboardPage implements OnInit, OnDestroy {
         }
       },
       error: (erro) => {
-        console.error('❌ Erro na conexão com a API:', erro);
+        console.error('❌ Erro API:', erro);
         this.isLoading = false;
       }
     });
   }
 
-  // Função auxiliar caso precises adicionar manualmente (opcional)
+  // --- Funções Auxiliares e Gráficos ---
+
   atualizarHistorico(ph: number, turb: number) {
     const agora = new Date();
     const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -126,12 +166,9 @@ export class DashboardPage implements OnInit, OnDestroy {
         chart.data.datasets[0].data = this.histTurbidez;
         break;
     }
-    
+
     chart.update();
   }
-
-  // --- Funções de Status ---
-  // getStatusTemperatura REMOVIDO
 
   getStatusPH() {
     if (this.ph < 6.5 || this.ph > 8.0) { return 'perigo'; }
@@ -166,9 +203,9 @@ export class DashboardPage implements OnInit, OnDestroy {
     }
 
     this.graficoVisivel = metricaSendoAberta;
-    
+
     setTimeout(() => {
-        this.criarGrafico(metricaSendoAberta);
+      this.criarGrafico(metricaSendoAberta);
     }, 50);
   }
 
@@ -179,17 +216,16 @@ export class DashboardPage implements OnInit, OnDestroy {
     let corFundo = 'rgba(0, 121, 107, 0.2)';
 
     switch (metrica) {
-      // Case 'Temperatura' REMOVIDO
       case 'pH':
         canvas = this.chartPHCanvas;
         dadosParaUsar = this.histPH;
-        corBorda = '#D32F2F'; 
+        corBorda = '#D32F2F';
         corFundo = 'rgba(211, 47, 47, 0.2)';
         break;
       case 'Turbidez':
         canvas = this.chartTurbidezCanvas;
         dadosParaUsar = this.histTurbidez;
-        corBorda = '#F57C00'; 
+        corBorda = '#F57C00';
         corFundo = 'rgba(245, 124, 0, 0.2)';
         break;
     }
