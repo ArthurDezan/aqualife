@@ -7,13 +7,12 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
 
-  // COLE AQUI A URL QUE ESTÁ NO SEU POSTMAN (Collection Dezan)
-  // Exemplo hipotético baseado em documentações comuns, substitua pela URL real
+  // O endereço da tua API (baseado no que partilhaste)
   private apiUrl = 'https://esp32-mongodb-idev3.onrender.com/api/leituras/Dezan'; 
 
   constructor(private http: HttpClient) { }
 
-  // Função que busca os dados atuais
+  // Função chamada pelo Dashboard para receber a lista de dados
   getDadosSensores(): Observable<any> {
     return this.http.get<any>(this.apiUrl);
   }

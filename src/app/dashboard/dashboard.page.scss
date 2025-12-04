@@ -3,18 +3,58 @@ ion-content {
   --background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
 }
 
-/* --- ESTILO DO HEADER "ÁGUA" --- */
+/* --- HEADER --- */
 .water-header {
   ion-toolbar {
     --background: transparent;
   }
-
-  /* MODIFICA ESTA REGRA */
   ion-title {
-    /* 1. A Nova Fonte */
     font-family: 'Poppins', sans-serif;
+    color: #004d40;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
 
-    /* 2. Cor (mantém o nosso verde-água escuro) */
+.title-icon {
+  margin-right: 8px;
+  font-size: 1.4rem;
+  position: relative;
+  top: 1px;
+}
+
+/* --- CARTÕES GERAIS --- */
+ion-card {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease-in-out;
+  margin-inline: 0;
+}
+
+/* --- CARTÕES DE MÉTRICAS --- */
+.metric-card {
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+
+  ion-card-header {
+    padding-bottom: 0;
+  }
+
+  ion-icon {
+    font-size: 48px;
+    color: #00796b;
+    transition: color 0.3s ease-in-out;
+  }
+
+  ion-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
     color: #004d40;
 
     /* 3. Peso e Espaçamento (mais elegante) */
@@ -29,127 +69,53 @@ ion-content {
     align-items: center;
     justify-content: center;
   }
-}
 
-.title-icon {
-  /* Adiciona um espaço à direita do ícone */
-  margin-right: 8px;
-  /* Tamanho do ícone */
-  font-size: 1.4rem;
-  /* Pequeno ajuste vertical para alinhar perfeitamente com o texto */
-  position: relative;
-  top: 1px;
-}
-
-/* --- ESTILO DOS CARTÕES "ÁGUA" --- */
-.metric-card {
-  /* 1. O Fundo de Vidro */
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.3) 100%);
-
-  /* 2. O Desfoque (O segredo do efeito) */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  /* Para funcionar no Safari/iOS */
-
-  /* 3. Bordas e Sombras para dar profundidade */
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-  /* Sombra suave azulada */
-  border-radius: 16px;
-
-  /* Espaçamentos */
-  text-align: center;
-  padding: 15px;
-  margin-bottom: 10px;
-  /* Espaço extra se tiveres colunas empilhadas */
-
-  /* Transições suaves */
-  transition: all 0.3s ease;
-}
-
-.metric-card:active {
-  transform: scale(0.98);
-  box-shadow: 0 4px 10px 0 rgba(31, 38, 135, 0.1);
-}
-
-.metric-card ion-card-header {
-  padding-bottom: 0;
-  padding-top: 5px;
-}
-
-.metric-card ion-icon {
-  font-size: 48px;
-  color: #00796b;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); /* Sombra no ícone para destaque */
-  transition: color 0.3s ease-in-out;
-}
-
-.metric-card ion-card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #004d40;
-  margin-top: 8px;
-  letter-spacing: 0.5px;
-}
-
-.metric-value {
-  font-size: 2.8rem; /* Ligeiramente maior */
-  font-weight: bold;
-  color: #00796b;
-  padding: 10px 0;
-  text-shadow: 0 2px 4px rgba(255,255,255,0.5); /* Melhora leitura no vidro */
-  transition: color 0.3s ease-in-out;
-}
-
-.metric-value .unit {
-  font-size: 1rem;
-  font-weight: normal;
-  color: #004d40;
-  margin-left: 4px;
-}
-
-
-/* --- NOVOS ESTILOS: INDICADORES DE ESTADO --- */
-
-/* Estado de Atenção (Amarelo/Laranja) */
-.metric-card.atencao {
-
-  /* Podes usar a cor que vem do Ionic: var(--ion-color-warning) */
-  ion-icon,
   .metric-value {
     color: #F57C00; // Um tom de laranja
   }
-}
+  
+  /* Novo estilo para o texto de status (Nível Ok/Não Ok) */
+  .metric-value.status-text {
+      font-size: 1.8rem; /* Um pouco menor para caber o texto */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      
+      ion-icon {
+          font-size: 2rem; /* Ícone inline */
+          color: inherit;
+      }
+  }
 
-/* Estado de Perigo (Vermelho) */
-.metric-card.perigo {
-
-  /* Podes usar a cor que vem do Ionic: var(--ion-color-danger) */
-  ion-icon,
-  .metric-value {
-    color: #D32F2F; // Um tom de vermelho
+  .metric-value .unit {
+    font-size: 1rem;
+    font-weight: normal;
+    color: #004d40;
+    margin-left: 4px;
   }
 }
 
-/* --- NOVO ESTILO: ESQUELETO DE CARREGAMENTO --- */
+/* --- ESTADOS DE ALERTA --- */
+.metric-card.atencao {
+  ion-icon, .metric-value { color: #F57C00; }
+}
 
+.metric-card.perigo {
+  ion-icon, .metric-value { color: #D32F2F; }
+}
+
+/* --- LOADING SKELETON --- */
 .metric-value-skeleton {
-  /* Faz o esqueleto ter a altura aproximada do texto */
   height: 2.5rem;
   width: 60%;
   margin: auto;
   padding: 10px 0;
-  /* Arredonda o esqueleto */
   border-radius: 8px;
-
-  /* Cor do esqueleto que combina com o tema */
-  --border-radius: 8px;
   --background: rgba(0, 121, 107, 0.1);
-  --background-rgb: 0, 121, 107;
 }
 
-
-/* --- ESTILOS DOS GRÁFICOS (Mantém igual) --- */
+/* --- GRÁFICOS EXPANSÍVEIS --- */
 .chart-container {
   background-color: rgba(255, 255, 255, 0.85);
   border-radius: 8px;
@@ -164,12 +130,7 @@ ion-content {
   max-height: 400px;
   padding-top: 16px;
   padding-bottom: 16px;
-
-  .chart-wrapper {
-    opacity: 1;
-    /* A transição será um pouco mais lenta ao aparecer */
-    transition: opacity 0.4s ease-in;
-  }
+  .chart-wrapper { opacity: 1; transition: opacity 0.4s ease-in; }
 }
 
 .chart-wrapper {
@@ -178,19 +139,4 @@ ion-content {
   height: 250px;
   opacity: 0;
   transition: opacity 0.3s ease-out;
-}
-
-.metric-value-skeleton {
-  /* Tamanho e forma */
-  height: 3rem; 
-  width: 70%;       /* Ocupa 70% da largura para parecer um número */
-  margin: 10px auto; /* Centraliza */
-  border-radius: 8px;
-  
-  /* Cores personalizadas para combinar com o tema Aqualife */
-  --background: rgba(0, 121, 107, 0.1);      /* Fundo verde-água muito claro */
-  --background-rgb: 0, 121, 107;             /* Cor base para a animação */
-  
-  /* Opacidade para misturar com o efeito de vidro */
-  opacity: 0.8;
 }
