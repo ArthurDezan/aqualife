@@ -1,152 +1,196 @@
 /* Aplicar o fundo gradiente a toda a área de conteúdo */
 ion-content {
-    --background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
-  }
-  
-  /* --- ESTILO DO HEADER "ÁGUA" --- */
-  .water-header {
-    ion-toolbar {
-        --background: transparent;
-      }
-    
-      /* MODIFICA ESTA REGRA */
-      ion-title {
-        /* 1. A Nova Fonte */
-        font-family: 'Poppins', sans-serif;
-        
-        /* 2. Cor (mantém o nosso verde-água escuro) */
-        color: #004d40;
-        
-        /* 3. Peso e Espaçamento (mais elegante) */
-        font-weight: 400; // 400 (Regular) é mais leve que 600 (Semibold)
-        letter-spacing: 0.5px; // Dá um "ar" mais profissional
-        
-        /* 4. Alinhamento */
-        text-align: center; // Força o centro em todas as plataformas
-        
-        /* 5. Alinha o ícone com o texto */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+  --background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
+}
+
+/* --- ESTILO DO HEADER "ÁGUA" --- */
+.water-header {
+  ion-toolbar {
+    --background: transparent;
   }
 
-  .title-icon {
-    /* Adiciona um espaço à direita do ícone */
-    margin-right: 8px;
-    /* Tamanho do ícone */
-    font-size: 1.4rem;
-    /* Pequeno ajuste vertical para alinhar perfeitamente com o texto */
-    position: relative;
-    top: 1px;
-  } 
-  
-  /* --- ESTILO DOS CARTÕES "ÁGUA" --- */
-  .metric-card {
-    background-color: rgba(255, 255, 255, 0.7);
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    text-align: center;
-    padding: 10px;
-    /* Transição suave da cor ao carregar */
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .metric-card ion-card-header {
-    padding-bottom: 0;
-  }
-  
-  .metric-card ion-icon {
-    font-size: 48px;
-    color: #00796b;
-    transition: color 0.3s ease-in-out;
-  }
-  
-  .metric-card ion-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
+  /* MODIFICA ESTA REGRA */
+  ion-title {
+    /* 1. A Nova Fonte */
+    font-family: 'Poppins', sans-serif;
+
+    /* 2. Cor (mantém o nosso verde-água escuro) */
     color: #004d40;
-    margin-top: 8px;
+
+    /* 3. Peso e Espaçamento (mais elegante) */
+    font-weight: 400; // 400 (Regular) é mais leve que 600 (Semibold)
+    letter-spacing: 0.5px; // Dá um "ar" mais profissional
+
+    /* 4. Alinhamento */
+    text-align: center; // Força o centro em todas as plataformas
+
+    /* 5. Alinha o ícone com o texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  
+}
+
+.title-icon {
+  /* Adiciona um espaço à direita do ícone */
+  margin-right: 8px;
+  /* Tamanho do ícone */
+  font-size: 1.4rem;
+  /* Pequeno ajuste vertical para alinhar perfeitamente com o texto */
+  position: relative;
+  top: 1px;
+}
+
+/* --- ESTILO DOS CARTÕES "ÁGUA" --- */
+.metric-card {
+  /* 1. O Fundo de Vidro */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.3) 100%);
+
+  /* 2. O Desfoque (O segredo do efeito) */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  /* Para funcionar no Safari/iOS */
+
+  /* 3. Bordas e Sombras para dar profundidade */
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  /* Sombra suave azulada */
+  border-radius: 16px;
+
+  /* Espaçamentos */
+  text-align: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  /* Espaço extra se tiveres colunas empilhadas */
+
+  /* Transições suaves */
+  transition: all 0.3s ease;
+}
+
+.metric-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 10px 0 rgba(31, 38, 135, 0.1);
+}
+
+.metric-card ion-card-header {
+  padding-bottom: 0;
+  padding-top: 5px;
+}
+
+.metric-card ion-icon {
+  font-size: 48px;
+  color: #00796b;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); /* Sombra no ícone para destaque */
+  transition: color 0.3s ease-in-out;
+}
+
+.metric-card ion-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #004d40;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 2.8rem; /* Ligeiramente maior */
+  font-weight: bold;
+  color: #00796b;
+  padding: 10px 0;
+  text-shadow: 0 2px 4px rgba(255,255,255,0.5); /* Melhora leitura no vidro */
+  transition: color 0.3s ease-in-out;
+}
+
+.metric-value .unit {
+  font-size: 1rem;
+  font-weight: normal;
+  color: #004d40;
+  margin-left: 4px;
+}
+
+
+/* --- NOVOS ESTILOS: INDICADORES DE ESTADO --- */
+
+/* Estado de Atenção (Amarelo/Laranja) */
+.metric-card.atencao {
+
+  /* Podes usar a cor que vem do Ionic: var(--ion-color-warning) */
+  ion-icon,
   .metric-value {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #00796b;
-    padding: 10px 0;
-    transition: color 0.3s ease-in-out;
+    color: #F57C00; // Um tom de laranja
   }
-  
-  .metric-value .unit {
-    font-size: 1rem;
-    font-weight: normal;
-    color: #004d40;
-    margin-left: 4px;
+}
+
+/* Estado de Perigo (Vermelho) */
+.metric-card.perigo {
+
+  /* Podes usar a cor que vem do Ionic: var(--ion-color-danger) */
+  ion-icon,
+  .metric-value {
+    color: #D32F2F; // Um tom de vermelho
   }
-  
-  
-  /* --- NOVOS ESTILOS: INDICADORES DE ESTADO --- */
-  
-  /* Estado de Atenção (Amarelo/Laranja) */
-  .metric-card.atencao {
-    /* Podes usar a cor que vem do Ionic: var(--ion-color-warning) */
-    ion-icon, .metric-value {
-      color: #F57C00; // Um tom de laranja
-    }
-  }
-  
-  /* Estado de Perigo (Vermelho) */
-  .metric-card.perigo {
-    /* Podes usar a cor que vem do Ionic: var(--ion-color-danger) */
-    ion-icon, .metric-value {
-      color: #D32F2F; // Um tom de vermelho
-    }
-  }
-  
-  /* --- NOVO ESTILO: ESQUELETO DE CARREGAMENTO --- */
-  
-  .metric-value-skeleton {
-    /* Faz o esqueleto ter a altura aproximada do texto */
-    height: 2.5rem; 
-    width: 60%;
-    margin: auto;
-    padding: 10px 0;
-    /* Arredonda o esqueleto */
-    border-radius: 8px;
-    
-    /* Cor do esqueleto que combina com o tema */
-    --border-radius: 8px;
-    --background: rgba(0, 121, 107, 0.1); 
-    --background-rgb: 0, 121, 107;
-  }
-  
-  
-  /* --- ESTILOS DOS GRÁFICOS (Mantém igual) --- */
-  .chart-container {
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 8px;
-    margin: 0 8px 16px 8px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.7s ease-out;
-    padding: 0 16px;
-  }
-  
-  .chart-container.expanded {
-    max-height: 400px;
-    padding-top: 16px;
-    padding-bottom: 16px;
-    .chart-wrapper {
-        opacity: 1;
-        /* A transição será um pouco mais lenta ao aparecer */
-        transition: opacity 0.4s ease-in;
-      }
-  }
-  
+}
+
+/* --- NOVO ESTILO: ESQUELETO DE CARREGAMENTO --- */
+
+.metric-value-skeleton {
+  /* Faz o esqueleto ter a altura aproximada do texto */
+  height: 2.5rem;
+  width: 60%;
+  margin: auto;
+  padding: 10px 0;
+  /* Arredonda o esqueleto */
+  border-radius: 8px;
+
+  /* Cor do esqueleto que combina com o tema */
+  --border-radius: 8px;
+  --background: rgba(0, 121, 107, 0.1);
+  --background-rgb: 0, 121, 107;
+}
+
+
+/* --- ESTILOS DOS GRÁFICOS (Mantém igual) --- */
+.chart-container {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  margin: 0 8px 16px 8px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.7s ease-out;
+  padding: 0 16px;
+}
+
+.chart-container.expanded {
+  max-height: 400px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+
   .chart-wrapper {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    opacity: 0;
-    transition: opacity 0.3s ease-out;
+    opacity: 1;
+    /* A transição será um pouco mais lenta ao aparecer */
+    transition: opacity 0.4s ease-in;
   }
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.metric-value-skeleton {
+  /* Tamanho e forma */
+  height: 3rem; 
+  width: 70%;       /* Ocupa 70% da largura para parecer um número */
+  margin: 10px auto; /* Centraliza */
+  border-radius: 8px;
+  
+  /* Cores personalizadas para combinar com o tema Aqualife */
+  --background: rgba(0, 121, 107, 0.1);      /* Fundo verde-água muito claro */
+  --background-rgb: 0, 121, 107;             /* Cor base para a animação */
+  
+  /* Opacidade para misturar com o efeito de vidro */
+  opacity: 0.8;
+}
