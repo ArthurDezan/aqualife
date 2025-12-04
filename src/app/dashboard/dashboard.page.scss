@@ -56,15 +56,22 @@ ion-card {
     font-size: 1.1rem;
     font-weight: 600;
     color: #004d40;
-    margin-top: 8px;
+
+    /* 3. Peso e Espaçamento (mais elegante) */
+    font-weight: 400; // 400 (Regular) é mais leve que 600 (Semibold)
+    letter-spacing: 0.5px; // Dá um "ar" mais profissional
+
+    /* 4. Alinhamento */
+    text-align: center; // Força o centro em todas as plataformas
+
+    /* 5. Alinha o ícone com o texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .metric-value {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #00796b;
-    padding: 10px 0;
-    transition: color 0.3s ease-in-out;
+    color: #F57C00; // Um tom de laranja
   }
   
   /* Novo estilo para o texto de status (Nível Ok/Não Ok) */

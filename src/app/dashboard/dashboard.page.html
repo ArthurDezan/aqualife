@@ -58,11 +58,12 @@
             <ion-icon name="analytics-outline"></ion-icon>
             <ion-card-title>pH Detalhado</ion-card-title>
           </ion-card-header>
-
+      
           <ion-card-content>
             <div *ngIf="isLoading; else dadosPH">
               <ion-skeleton-text animated class="metric-value-skeleton"></ion-skeleton-text>
             </div>
+            
             <ng-template #dadosPH>
               <div class="metric-value">{{ ph }}</div>
             </ng-template>
@@ -84,11 +85,12 @@
             <ion-icon name="contrast-outline"></ion-icon>
             <ion-card-title>Turbidez Detalhada</ion-card-title>
           </ion-card-header>
-
+      
           <ion-card-content>
             <div *ngIf="isLoading; else dadosTurbidez">
               <ion-skeleton-text animated class="metric-value-skeleton"></ion-skeleton-text>
             </div>
+      
             <ng-template #dadosTurbidez>
               <div class="metric-value">{{ turbidez }} <span class="unit">NTU</span></div>
             </ng-template>

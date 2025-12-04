@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import { ApiService } from '../services/api.service';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,6 +28,10 @@ export class DashboardPage implements OnInit, OnDestroy {
   labelsTempo: string[] = [];
 
   private updateInterval: any;
+  
+  // Variáveis para controlar o "Anti-Spam" das notificações
+  private ultimoAlerta: number = 0;
+  private readonly INTERVALO_ALERTA = 1000 * 60 * 10; // 10 minutos
 
   // --- Referências aos elementos do HTML (Canvas) ---
   @ViewChild('chartPH') chartPHCanvas: ElementRef | undefined;
@@ -38,13 +43,21 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   constructor(private apiService: ApiService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.solicitarPermissaoNotificacao();
     this.carregarDadosIniciais();
   }
 
   ngOnDestroy() {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
+    }
+  }
+
+  async solicitarPermissaoNotificacao() {
+    const status = await LocalNotifications.checkPermissions();
+    if (status.display !== 'granted') {
+      await LocalNotifications.requestPermissions();
     }
   }
 
@@ -243,7 +256,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     }
 
     this.graficoVisivel = metricaSendoAberta;
-
     setTimeout(() => {
       this.criarGraficoLinha(metricaSendoAberta);
     }, 50);
