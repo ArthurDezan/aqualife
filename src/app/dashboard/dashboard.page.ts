@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import { ApiService } from '../services/api.service';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,12 +16,19 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   ph: number = 0;
   turbidez: number = 0;
+  
+  // Lista para o caso de usares o novo HTML
+  metrics: any[] = [];
 
   histPH: number[] = [];
   histTurbidez: number[] = [];
   labelsTempo: string[] = [];
 
   private updateInterval: any;
+  
+  // Variáveis para controlar o "Anti-Spam" das notificações
+  private ultimoAlerta: number = 0;
+  private readonly INTERVALO_ALERTA = 1000 * 60 * 10; // 10 minutos
 
   @ViewChild('chartPH') chartPHCanvas: ElementRef | undefined;
   @ViewChild('chartTurbidez') chartTurbidezCanvas: ElementRef | undefined;
@@ -29,13 +37,21 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   constructor(private apiService: ApiService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.solicitarPermissaoNotificacao();
     this.carregarDadosIniciais();
   }
 
   ngOnDestroy() {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
+    }
+  }
+
+  async solicitarPermissaoNotificacao() {
+    const status = await LocalNotifications.checkPermissions();
+    if (status.display !== 'granted') {
+      await LocalNotifications.requestPermissions();
     }
   }
 
@@ -47,12 +63,61 @@ export class DashboardPage implements OnInit, OnDestroy {
     }, 7000);
   }
 
-  // --- NOVA FUNÇÃO "BLINDADA" PARA CONVERTER DATAS ---
-  private converterParaTimestamp(item: any): number {
-    let valorData = item.timestamp; // ← Sua API sempre envia "timestamp"
+  // --- FUNÇÕES DE COMPATIBILIDADE (CORREÇÃO DO ERRO) ---
+  // Estas funções ligam o HTML antigo à nova lógica
+  getStatusPH() {
+    const status = this.calcularStatusPH(this.ph);
+    // Retorna a classe CSS baseada no status
+    return 'border-' + status.toLowerCase();
+  }
 
+  getStatusTurbidez() {
+    const status = this.calcularStatusTurbidez(this.turbidez);
+    return 'border-' + status.toLowerCase();
+  }
+  // -----------------------------------------------------
+
+  async verificarAlertas(ph: number, turbidez: number) {
+    const agora = Date.now();
+    if (agora - this.ultimoAlerta < this.INTERVALO_ALERTA) {
+      return;
+    }
+
+    let problemas: string[] = [];
+
+    if (turbidez > 20) {
+      problemas.push(`⚠️ Turbidez Alta: ${turbidez} NTU`);
+    }
+
+    if (ph < 6 || ph > 8) {
+      problemas.push(`☠️ pH Crítico: ${ph}`);
+    }
+
+    if (problemas.length > 0) {
+      const corpoMensagem = problemas.join('\n');
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: '🚨 Alerta Aqualife!',
+            body: corpoMensagem,
+            id: 1,
+            schedule: { at: new Date(Date.now() + 1000) },
+            sound: 'beep.wav',
+            smallIcon: 'ic_stat_alarm'
+          }
+        ]
+      });
+      this.ultimoAlerta = agora;
+    }
+  }
+
+  openChartModal(metric: any) {
+    this.toggleGrafico(metric.key);
+  }
+
+  private converterParaTimestamp(item: any): number {
+    let valorData = item.timestamp;
     if (!valorData || typeof valorData !== "string") {
-      // fallback pelo ObjectId do MongoDB
       if (item._id) {
         try {
           return parseInt(item._id.substring(0, 8), 16) * 1000;
@@ -60,69 +125,58 @@ export class DashboardPage implements OnInit, OnDestroy {
       }
       return 0;
     }
-
-    // Formato 100% compatível com sua API
-    // Ex: "03/12/2025, 08:10:43"
     const regex = /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
     const partes = valorData.match(regex);
-
     if (!partes) return 0;
-
-    const dia = Number(partes[1]);
-    const mes = Number(partes[2]) - 1; // JS começa o mês no zero
-    const ano = Number(partes[3]);
-    const hora = Number(partes[4]);
-    const min = Number(partes[5]);
-    const seg = Number(partes[6]);
-
-    return new Date(ano, mes, dia, hora, min, seg).getTime();
+    
+    return new Date(Number(partes[3]), Number(partes[2]) - 1, Number(partes[1]), Number(partes[4]), Number(partes[5]), Number(partes[6])).getTime();
   }
 
   buscarDadosApi() {
     this.apiService.getDadosSensores().subscribe({
       next: (dados: any) => {
-
         if (Array.isArray(dados) && dados.length > 0) {
-
-          // Debug para ver o que está a acontecer
-          // console.log('Dado Bruto (Antes de ordenar):', dados[0]);
-
-          // --- ORDENAÇÃO ---
+          
           dados.sort((a: any, b: any) =>
             this.converterParaTimestamp(a) - this.converterParaTimestamp(b)
           );
-          // -----------------
 
           const leituraAtual = dados[dados.length - 1];
-          console.log('✅ Leitura Mais Recente (Final):', leituraAtual);
 
           this.ph = Number(leituraAtual.PH);
           this.turbidez = Number(leituraAtual.turbidez || 0);
 
-          const ultimos10 = dados.slice(-10);
+          this.verificarAlertas(this.ph, this.turbidez);
 
+          this.metrics = [
+            {
+              key: 'pH',
+              name: 'pH da Água',
+              value: this.ph,
+              unit: 'pH',
+              status: this.calcularStatusPH(this.ph)
+            },
+            {
+              key: 'Turbidez',
+              name: 'Turbidez',
+              value: this.turbidez,
+              unit: 'NTU',
+              status: this.calcularStatusTurbidez(this.turbidez)
+            }
+          ];
+
+          const ultimos10 = dados.slice(-10);
           this.histPH = ultimos10.map((d: any) => Number(d.PH));
           this.histTurbidez = ultimos10.map((d: any) => Number(d.turbidez || 0));
 
-          // Usar a data real da API
           this.labelsTempo = ultimos10.map((d: any) => {
             const regex = /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2})/;
             const partes = d.timestamp.match(regex);
-
-            if (partes) {
-              return `${partes[1]}/${partes[2]} ${partes[4]}:${partes[5]}`;
-              // ex: "03/12 08:10"
-            }
-
-            return '';
+            return partes ? `${partes[1]}/${partes[2]} ${partes[4]}:${partes[5]}` : '';
           });
 
-        } else {
-          console.warn('⚠️ Lista vazia:', dados);
         }
-
         this.isLoading = false;
-
         if (this.graficoVisivel) {
           this.atualizarGraficoAberto();
         }
@@ -134,51 +188,16 @@ export class DashboardPage implements OnInit, OnDestroy {
     });
   }
 
-  // --- Funções Auxiliares e Gráficos ---
-
-  atualizarHistorico(ph: number, turb: number) {
-    const agora = new Date();
-    const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-    this.histPH.push(ph);
-    this.histTurbidez.push(turb);
-    this.labelsTempo.push(horaFormatada);
-
-    if (this.histPH.length > 10) {
-      this.histPH.shift();
-      this.histTurbidez.shift();
-      this.labelsTempo.shift();
-    }
+  calcularStatusPH(valor: number): string {
+    if (valor < 6.5 || valor > 8.0) return 'Danger';
+    if (valor < 7.0 || valor > 7.6) return 'Warning';
+    return 'Safe';
   }
 
-  atualizarGraficoAberto() {
-    const metrica = this.graficoVisivel;
-    if (!metrica || !this.chartInstances[metrica]) return;
-
-    const chart = this.chartInstances[metrica];
-    chart.data.labels = this.labelsTempo;
-
-    switch (metrica) {
-      case 'pH':
-        chart.data.datasets[0].data = this.histPH;
-        break;
-      case 'Turbidez':
-        chart.data.datasets[0].data = this.histTurbidez;
-        break;
-    }
-
-    chart.update();
-  }
-
-  getStatusPH() {
-    if (this.ph < 6.5 || this.ph > 8.0) { return 'perigo'; }
-    if (this.ph < 7.0 || this.ph > 7.6) { return 'atencao'; }
-    return 'bom';
-  }
-  getStatusTurbidez() {
-    if (this.turbidez > 5.0) { return 'perigo'; }
-    if (this.turbidez > 3.0) { return 'atencao'; }
-    return 'bom';
+  calcularStatusTurbidez(valor: number): string {
+    if (valor > 5.0) return 'Danger';
+    if (valor > 3.0) return 'Warning';
+    return 'Safe';
   }
 
   toggleGrafico(metrica: string) {
@@ -203,10 +222,27 @@ export class DashboardPage implements OnInit, OnDestroy {
     }
 
     this.graficoVisivel = metricaSendoAberta;
-
     setTimeout(() => {
       this.criarGrafico(metricaSendoAberta);
     }, 50);
+  }
+
+  atualizarGraficoAberto() {
+    const metrica = this.graficoVisivel;
+    if (!metrica || !this.chartInstances[metrica]) return;
+
+    const chart = this.chartInstances[metrica];
+    chart.data.labels = this.labelsTempo;
+
+    switch (metrica) {
+      case 'pH':
+        chart.data.datasets[0].data = this.histPH;
+        break;
+      case 'Turbidez':
+        chart.data.datasets[0].data = this.histTurbidez;
+        break;
+    }
+    chart.update();
   }
 
   criarGrafico(metrica: string) {
