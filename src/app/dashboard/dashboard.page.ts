@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import { ApiService } from '../services/api.service';
-// 1. Importamos o plugin de Notificações
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
@@ -17,6 +16,8 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   ph: number = 0;
   turbidez: number = 0;
+  
+  // Lista para o caso de usares o novo HTML
   metrics: any[] = [];
 
   histPH: number[] = [];
@@ -25,9 +26,9 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   private updateInterval: any;
   
-  // 2. Variáveis para controlar o "Anti-Spam" das notificações
+  // Variáveis para controlar o "Anti-Spam" das notificações
   private ultimoAlerta: number = 0;
-  private readonly INTERVALO_ALERTA = 1000 * 60 * 10; // 10 minutos em milissegundos
+  private readonly INTERVALO_ALERTA = 1000 * 60 * 10; // 10 minutos
 
   @ViewChild('chartPH') chartPHCanvas: ElementRef | undefined;
   @ViewChild('chartTurbidez') chartTurbidezCanvas: ElementRef | undefined;
@@ -37,7 +38,6 @@ export class DashboardPage implements OnInit, OnDestroy {
   constructor(private apiService: ApiService) { }
 
   async ngOnInit() {
-    // 3. Pedir permissão ao iniciar o app (obrigatório no Android 13+ e iOS)
     await this.solicitarPermissaoNotificacao();
     this.carregarDadosIniciais();
   }
@@ -63,68 +63,51 @@ export class DashboardPage implements OnInit, OnDestroy {
     }, 7000);
   }
 
-  // --- LÓGICA DE NOTIFICAÇÃO ---
+  // --- FUNÇÕES DE COMPATIBILIDADE (CORREÇÃO DO ERRO) ---
+  // Estas funções ligam o HTML antigo à nova lógica
+  getStatusPH() {
+    const status = this.calcularStatusPH(this.ph);
+    // Retorna a classe CSS baseada no status
+    return 'border-' + status.toLowerCase();
+  }
+
+  getStatusTurbidez() {
+    const status = this.calcularStatusTurbidez(this.turbidez);
+    return 'border-' + status.toLowerCase();
+  }
+  // -----------------------------------------------------
+
   async verificarAlertas(ph: number, turbidez: number) {
     const agora = Date.now();
-    
-    // Se ainda não passaram 10 minutos desde o último alerta, ignoramos
     if (agora - this.ultimoAlerta < this.INTERVALO_ALERTA) {
       return;
     }
 
     let problemas: string[] = [];
 
-    // Lógica 1: Turbidez maior que 20
     if (turbidez > 20) {
       problemas.push(`⚠️ Turbidez Alta: ${turbidez} NTU`);
     }
 
-    // Lógica 2: pH menor que 6 OU maior que 8 (Zona de Perigo)
     if (ph < 6 || ph > 8) {
       problemas.push(`☠️ pH Crítico: ${ph}`);
     }
 
-    // Se houver algum problema, enviamos a notificação
     if (problemas.length > 0) {
-      const corpoMensagem = problemas.join('\n'); // Junta as mensagens se houverem duas
-
+      const corpoMensagem = problemas.join('\n');
       await LocalNotifications.schedule({
         notifications: [
           {
             title: '🚨 Alerta Aqualife!',
             body: corpoMensagem,
             id: 1,
-            schedule: { at: new Date(Date.now() + 1000) }, // Dispara daqui a 1 segundo
-            sound: 'beep.wav', // Toca som padrão
-            smallIcon: 'ic_stat_alarm' // Ícone pequeno (opcional, usa o do app se não existir)
+            schedule: { at: new Date(Date.now() + 1000) },
+            sound: 'beep.wav',
+            smallIcon: 'ic_stat_alarm'
           }
         ]
       });
-
-      // Atualizamos o relógio do último alerta
       this.ultimoAlerta = agora;
-      console.log('Notificação enviada:', corpoMensagem);
-    }
-  }
-  // -----------------------------
-
-  getIcon(key: string): string {
-    const icons: { [key: string]: string } = {
-      'ph': 'water',
-      'turbidez': 'filter',
-      'ammonia': 'flask',
-      'nitrite': 'alert-circle',
-      'nitrate': 'leaf'
-    };
-    return icons[key.toLowerCase()] || 'analytics';
-  }
-
-  getStatusColor(status: string): string {
-    switch (status?.toLowerCase()) {
-      case 'safe': return 'success';
-      case 'warning': return 'warning';
-      case 'danger': return 'danger';
-      default: return 'medium';
     }
   }
 
@@ -152,7 +135,6 @@ export class DashboardPage implements OnInit, OnDestroy {
   buscarDadosApi() {
     this.apiService.getDadosSensores().subscribe({
       next: (dados: any) => {
-
         if (Array.isArray(dados) && dados.length > 0) {
           
           dados.sort((a: any, b: any) =>
@@ -164,7 +146,6 @@ export class DashboardPage implements OnInit, OnDestroy {
           this.ph = Number(leituraAtual.PH);
           this.turbidez = Number(leituraAtual.turbidez || 0);
 
-          // >>> AQUI CHAMAMOS A VERIFICAÇÃO DE ALERTA <<<
           this.verificarAlertas(this.ph, this.turbidez);
 
           this.metrics = [
@@ -194,12 +175,8 @@ export class DashboardPage implements OnInit, OnDestroy {
             return partes ? `${partes[1]}/${partes[2]} ${partes[4]}:${partes[5]}` : '';
           });
 
-        } else {
-          console.warn('⚠️ Lista vazia:', dados);
         }
-
         this.isLoading = false;
-
         if (this.graficoVisivel) {
           this.atualizarGraficoAberto();
         }
@@ -245,7 +222,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     }
 
     this.graficoVisivel = metricaSendoAberta;
-
     setTimeout(() => {
       this.criarGrafico(metricaSendoAberta);
     }, 50);
