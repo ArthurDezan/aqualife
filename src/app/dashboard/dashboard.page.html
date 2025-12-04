@@ -7,18 +7,56 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
   <ion-grid>
+    
     <ion-row>
+      <ion-col size="12">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Panorama Geral</ion-card-subtitle>
+            <ion-card-title>Status Atual (pH e Turbidez)</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div style="height: 200px;">
+              <canvas #chartBarHorizontal></canvas>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
 
-      <ion-col size="12" size-md="6">
+    <ion-row>
+      <ion-col size="12" size-md="4">
+        <ion-card class="metric-card" [ngClass]="getStatusNivelSimples()">
+          <ion-card-header>
+            <ion-icon name="water"></ion-icon>
+            <ion-card-title>Nível da Água</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div *ngIf="isLoading; else dadosNivel">
+              <ion-skeleton-text animated class="metric-value-skeleton"></ion-skeleton-text>
+            </div>
+            <ng-template #dadosNivel>
+              <div class="metric-value status-text">
+                <ion-icon *ngIf="nivelAguaTexto === 'Nível Ok'" name="checkmark-circle-outline"></ion-icon>
+                <ion-icon *ngIf="nivelAguaTexto !== 'Nível Ok'" name="alert-circle-outline"></ion-icon>
+                <span>{{ nivelAguaTexto }}</span>
+              </div>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="12" size-md="4">
         <ion-card class="metric-card" 
                   [ngClass]="getStatusPH()" 
                   (click)="toggleGrafico('pH')" button>
           <ion-ripple-effect></ion-ripple-effect>
           <ion-card-header>
             <ion-icon name="analytics-outline"></ion-icon>
-            <ion-card-title>Nível de pH</ion-card-title>
+            <ion-card-title>pH Detalhado</ion-card-title>
           </ion-card-header>
 
           <ion-card-content>
@@ -30,7 +68,6 @@
             </ng-template>
           </ion-card-content>
         </ion-card>
-
         <div class="chart-container" [class.expanded]="graficoVisivel === 'pH'">
           <div class="chart-wrapper">
             <canvas #chartPH></canvas>
@@ -38,14 +75,14 @@
         </div>
       </ion-col>
 
-      <ion-col size="12" size-md="6">
+      <ion-col size="12" size-md="4">
         <ion-card class="metric-card" 
                   [ngClass]="getStatusTurbidez()" 
                   (click)="toggleGrafico('Turbidez')" button>
           <ion-ripple-effect></ion-ripple-effect>
           <ion-card-header>
             <ion-icon name="contrast-outline"></ion-icon>
-            <ion-card-title>Turbidez</ion-card-title>
+            <ion-card-title>Turbidez Detalhada</ion-card-title>
           </ion-card-header>
 
           <ion-card-content>
@@ -57,7 +94,6 @@
             </ng-template>
           </ion-card-content>
         </ion-card>
-
         <div class="chart-container" [class.expanded]="graficoVisivel === 'Turbidez'">
           <div class="chart-wrapper">
             <canvas #chartTurbidez></canvas>
