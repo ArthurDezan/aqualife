@@ -94,6 +94,7 @@ export class DashboardPage implements OnInit, OnDestroy {
   buscarDadosApi() {
     this.apiService.getDadosSensores().subscribe({
       next: (dados: any) => {
+        console.log(dados)
         if (Array.isArray(dados) && dados.length > 0) {
           
           // 1. Ordenação cronológica (do mais antigo para o mais recente)
