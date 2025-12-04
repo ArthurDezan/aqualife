@@ -27,64 +27,92 @@ ion-content {
   top: 1px;
 }
 
-/* --- CARTÕES GERAIS --- */
+/* --- ESTILOS GERAIS DOS CARTÕES --- */
 ion-card {
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.8);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease-in-out;
   margin-inline: 0;
+  /* Garante que o card ocupe a altura total da coluna no grid */
+  height: 100%; 
 }
 
-/* --- CARTÕES DE MÉTRICAS --- */
+/* --- CARTÕES DE MÉTRICAS (Os 3 de baixo) --- */
 .metric-card {
-  text-align: center;
-  padding: 10px;
   cursor: pointer;
+  transition: transform 0.2s ease;
+  
+  /* Altura mínima fixa para garantir que todos tenham o mesmo tamanho */
+  min-height: 220px; 
+  
+  /* Flexbox para centralizar tudo vertical e horizontalmente */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
-  ion-card-header {
-    padding-bottom: 0;
-  }
-
-  ion-icon {
-    font-size: 48px;
-    color: #00796b;
-    transition: color 0.3s ease-in-out;
-  }
-
-  ion-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #004d40;
-
-    /* 3. Peso e Espaçamento (mais elegante) */
-    font-weight: 400; // 400 (Regular) é mais leve que 600 (Semibold)
-    letter-spacing: 0.5px; // Dá um "ar" mais profissional
-
-    /* 4. Alinhamento */
-    text-align: center; // Força o centro em todas as plataformas
-
-    /* 5. Alinha o ícone com o texto */
+  /* Wrapper interno para garantir centralização do conteúdo */
+  .card-content-wrapper {
+    width: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
   }
 
+  ion-card-header {
+    padding-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  ion-icon {
+    font-size: 3rem; /* Tamanho fixo do ícone do topo */
+    color: #00796b;
+    margin-bottom: 8px;
+  }
+
+  ion-card-title {
+    /* Tamanho de fonte fixo e padronizado */
+    font-size: 1.1rem !important; 
+    font-weight: 500;
+    color: #004d40;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  ion-card-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
+  }
+
+  /* O Valor numérico (ex: 7.2) ou Texto (Nível Ok) */
   .metric-value {
-    color: #F57C00; // Um tom de laranja
+    /* Tamanho grande e fixo para os números */
+    font-size: 2.5rem; 
+    font-weight: bold;
+    color: #F57C00;
+    line-height: 1;
   }
   
-  /* Novo estilo para o texto de status (Nível Ok/Não Ok) */
+  /* Ajuste específico para quando é texto (Nível Ok) */
   .metric-value.status-text {
-      font-size: 1.8rem; /* Um pouco menor para caber o texto */
+      font-size: 1.5rem; /* Um pouco menor para caber o texto */
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       
       ion-icon {
-          font-size: 2rem; /* Ícone inline */
-          color: inherit;
+          font-size: 1.8rem;
+          margin-bottom: 0; /* Remove margem do ícone interno */
+      }
+      
+      span {
+        white-space: nowrap; /* Evita quebra de linha indesejada */
       }
   }
 
@@ -93,10 +121,16 @@ ion-card {
     font-weight: normal;
     color: #004d40;
     margin-left: 4px;
+    vertical-align: middle;
   }
 }
 
-/* --- ESTADOS DE ALERTA --- */
+/* Efeito de clique */
+.metric-card:active {
+  transform: scale(0.98);
+}
+
+/* --- ESTADOS DE ALERTA (Cores) --- */
 .metric-card.atencao {
   ion-icon, .metric-value { color: #F57C00; }
 }
@@ -108,35 +142,31 @@ ion-card {
 /* --- LOADING SKELETON --- */
 .metric-value-skeleton {
   height: 2.5rem;
-  width: 60%;
-  margin: auto;
-  padding: 10px 0;
+  width: 80px;
   border-radius: 8px;
   --background: rgba(0, 121, 107, 0.1);
 }
 
 /* --- GRÁFICOS EXPANSÍVEIS --- */
 .chart-container {
-  background-color: rgba(255, 255, 255, 0.85);
-  border-radius: 8px;
-  margin: 0 8px 16px 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  margin: 0 4px 16px 4px;
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.7s ease-out;
-  padding: 0 16px;
+  transition: all 0.5s ease-out;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .chart-container.expanded {
-  max-height: 400px;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  .chart-wrapper { opacity: 1; transition: opacity 0.4s ease-in; }
+  max-height: 400px; /* Altura suficiente para abrir */
+  margin-top: -10px; /* Puxa um pouco para perto do card */
+  margin-bottom: 20px;
+  padding: 10px;
 }
 
 .chart-wrapper {
   position: relative;
   width: 100%;
   height: 250px;
-  opacity: 0;
-  transition: opacity 0.3s ease-out;
 }
