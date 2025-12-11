@@ -102,17 +102,14 @@ export class DashboardPage implements OnInit, OnDestroy {
           this.histPH = ultimos10.map((d: any) => Number(d.PH));
           this.histTurbidez = ultimos10.map((d: any) => Number(d.turbidez || 0));
           
-          // --- FORMATAÇÃO CRÍTICA DAS ETIQUETAS ---
+          // Formatação da hora
           this.labelsTempo = ultimos10.map((d: any) => {
             if (!d.timestamp) return '';
-            // Tenta extrair apenas a hora HH:mm para poupar espaço
-            // Exemplo entrada: "11/12/2024, 07:11:53" -> Saída: "07:11"
             const regex = /(\d{2}):(\d{2})/;
             const match = d.timestamp.match(regex);
             if (match) {
-               return match[0]; // Retorna "07:11"
+               return match[0]; 
             }
-            // Fallback: se não conseguir regex, retorna string vazia ou algo curto
             return ''; 
           });
 
@@ -212,7 +209,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     }
 
     this.graficoVisivel = metricaSendoAberta;
-    // Timeout para garantir que o container expandiu
     setTimeout(() => {
       this.criarGraficoLinha(metricaSendoAberta);
     }, 100); 
@@ -231,7 +227,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     chart.update();
   }
 
-  // --- AQUI ESTÁ A CORREÇÃO PRINCIPAL ---
   criarGraficoLinha(metrica: string) {
     let canvas: ElementRef | undefined;
     let dadosParaUsar: number[] = [];
@@ -258,7 +253,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     const chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: this.labelsTempo, // Etiquetas já formatadas (ex: "10:05")
+        labels: this.labelsTempo,
         datasets: [{
           label: metrica,
           data: dadosParaUsar,
@@ -277,12 +272,11 @@ export class DashboardPage implements OnInit, OnDestroy {
           y: { 
             beginAtZero: false 
           },
-          // --- CORREÇÃO DO EIXO X ---
           x: {
             ticks: {
-              maxTicksLimit: 4, // Força no máximo 4 etiquetas
-              maxRotation: 0,   // Impede texto inclinado
-              autoSkip: true    // Pula etiquetas automaticamente
+              maxTicksLimit: 4, 
+              maxRotation: 0,   
+              autoSkip: true    
             }
           }
         }

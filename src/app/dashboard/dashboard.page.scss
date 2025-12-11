@@ -1,17 +1,21 @@
-/* Aplicar o fundo gradiente a toda a área de conteúdo */
+/* Aplicar o fundo gradiente */
 ion-content {
-  --background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
+  --background: linear-gradient(180deg, #e0f7fa 0%, #ffffff 100%);
 }
 
 /* --- HEADER --- */
 .water-header {
+  background-color: #ffffff;
+  
   ion-toolbar {
-    --background: transparent;
+    --background: #ffffff; 
+    --border-style: none;
   }
+  
   ion-title {
     font-family: 'Poppins', sans-serif;
     color: #004d40;
-    font-weight: 400;
+    font-weight: 600;
     letter-spacing: 0.5px;
     text-align: center;
     display: flex;
@@ -23,42 +27,44 @@ ion-content {
 .title-icon {
   margin-right: 8px;
   font-size: 1.4rem;
+  color: #00796b;
   position: relative;
   top: 1px;
 }
 
 /* --- ESTILOS GERAIS DOS CARTÕES --- */
 ion-card {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-inline: 0;
-  /* Removemos o height: 100% global para não forçar esticamento indevido nos cards de baixo */
-  /* height: 100%;  <-- REMOVIDO/MOVIDO */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* Margens consistentes para organização */
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 0;
+  margin-bottom: 20px; /* Espaço entre um card e o próximo (vertical) */
 }
 
-/* Apenas o card principal (Panorama) pode querer 100% se necessário, mas geralmente auto é melhor */
+/* Ajustes Específicos do Card de Gráfico Horizontal */
 .chart-card {
-  height: 100%;
+  ion-card-title {
+    color: #000000 !important; /* CORRIGIDO: Preto puro para o título */
+    font-weight: bold;
+  }
 }
 
-/* --- CARTÕES DE MÉTRICAS (Os 3 de baixo) --- */
+/* --- CARTÕES DE MÉTRICAS --- */
 .metric-card {
   cursor: pointer;
   transition: transform 0.2s ease;
   
-  /* Altura: AUTO para colar no gráfico, mas com min-height para alinhamento visual básico */
+  /* Altura ajustada para visual vertical */
   height: auto; 
-  min-height: 220px; 
+  min-height: 180px; 
   
-  /* Importante: Remove margem inferior para colar no gráfico */
-  margin-bottom: 0 !important;
-  
-  /* Z-Index maior para ficar POR CIMA do gráfico quando ele desliza */
+  margin-bottom: 0 !important; /* Margem zero aqui para colar no gráfico expansível */
   position: relative;
   z-index: 10; 
 
-  /* Flexbox para centralizar tudo vertical e horizontalmente */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -70,41 +76,43 @@ ion-card {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 15px;
   }
 
   ion-card-header {
-    padding-bottom: 5px;
+    padding: 0 0 10px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
   ion-icon {
-    font-size: 3rem; 
+    font-size: 2.8rem;
     color: #00796b;
     margin-bottom: 8px;
   }
 
   ion-card-title {
     font-size: 1.1rem !important; 
-    font-weight: 500;
+    font-weight: 600;
     color: #004d40;
     text-align: center;
-    letter-spacing: 0.5px;
   }
 
   ion-card-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 
   .metric-value {
-    font-size: 2.5rem; 
+    font-size: 2.2rem;
     font-weight: bold;
     color: #F57C00;
     line-height: 1;
+    text-align: center;
   }
   
   .metric-value.status-text {
@@ -129,7 +137,6 @@ ion-card {
     font-weight: normal;
     color: #004d40;
     margin-left: 4px;
-    vertical-align: middle;
   }
 }
 
@@ -137,12 +144,14 @@ ion-card {
   transform: scale(0.98);
 }
 
-/* --- ESTADOS DE ALERTA (Cores) --- */
+/* --- ESTADOS DE ALERTA --- */
 .metric-card.atencao {
+  border: 1px solid #FFCC80;
   ion-icon, .metric-value { color: #F57C00; }
 }
 
 .metric-card.perigo {
+  border: 1px solid #EF9A9A;
   ion-icon, .metric-value { color: #D32F2F; }
 }
 
@@ -156,43 +165,32 @@ ion-card {
 
 /* --- GRÁFICOS EXPANSÍVEIS --- */
 .chart-container {
-  background-color: rgba(255, 255, 255, 0.95); /* Fundo ligeiramente mais opaco */
+  background-color: #ffffff;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
-  /* Margens laterais para alinhar com a largura visual do card (que tem padding do grid) */
-  margin: 0 4px 16px 4px; 
+  /* Margens laterais iguais ao card para alinhar verticalmente */
+  margin: 0 10px 20px 10px; 
   
   max-height: 0;
   overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animação mais suave */
-  box-shadow: inset 0 4px 8px rgba(0,0,0,0.05); /* Sombra interna no topo */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.03);
   
-  /* Z-Index menor para ficar POR BAIXO do card */
   position: relative;
   z-index: 1;
-  
-  /* Começa escondido debaixo do card */
   opacity: 0; 
 }
 
 .chart-container.expanded {
   max-height: 400px; 
   opacity: 1;
-  
-  /* O TRUQUE: Margem negativa para subir e encostar no card de cima */
-  margin-top: -20px; 
-  
-  /* Padding top extra para o conteúdo não ficar escondido atrás do card */
-  padding-top: 30px; 
-  padding-bottom: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
-  
-  margin-bottom: 20px;
+  margin-top: -15px; 
+  padding: 25px 10px 10px 10px;
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .chart-wrapper {
   position: relative;
   width: 100%;
-  height: 250px;
+  height: 220px;
 }

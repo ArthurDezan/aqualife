@@ -1,4 +1,4 @@
-<ion-header [translucent]="true" class="water-header">
+<ion-header class="water-header ion-no-border">
   <ion-toolbar>
     <ion-title>
       <ion-icon name="water-outline" class="title-icon"></ion-icon>
@@ -8,14 +8,14 @@
 </ion-header>
 
 <ion-content>
-  <ion-grid>
+  <ion-grid class="ion-padding-bottom">
     
     <ion-row>
       <ion-col size="12">
         <ion-card class="chart-card">
           <ion-card-header>
             <ion-card-subtitle>Panorama Geral</ion-card-subtitle>
-            <ion-card-title>Status Atual (pH e Turbidez)</ion-card-title>
+            <ion-card-title>Status Atual</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div style="height: 200px;">
@@ -99,7 +99,7 @@
               </div>
         
               <ng-template #dadosTurbidez>
-                <div class="metric-value">{{ turbidez }} <span class="unit">NTU</span></div>
+                <div class="metric-value">{{ turbidez }} <small class="unit">NTU</small></div>
               </ng-template>
             </ion-card-content>
           </div>
