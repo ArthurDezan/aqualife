@@ -11,30 +11,48 @@ import { Chart } from 'chart.js/auto';
 export class MetricChartModalComponent implements AfterViewInit {
 
   // --- Variáveis de Entrada ---
-  // O 'Input' permite que a página do dashboard envie dados para este modal
-  @Input() titulo: string = 'Gráfico'; // Título (ex: "Temperatura")
-  @Input() dados: number[] = [];     // Os valores (ex: [22, 23, 22.5])
-  @Input() labels: string[] = [];    // As legendas (ex: ["10:00", "10:05", "10:10"])
+  @Input() titulo: string = 'Gráfico';
+  @Input() dados: number[] = [];
+  
+  // AQUI está o segredo: Vamos receber as labels, mas vamos processá-las antes de usar
+  private _labels: string[] = [];
+  
+  @Input() 
+  set labels(value: string[]) {
+    // Quando os dados entram, vamos formatá-los imediatamente
+    // Transformamos "11/12/2024, 07:11:53" em apenas "07:11"
+    this._labels = value.map(label => {
+      // Tenta separar por vírgula ou espaço para pegar só a hora
+      const partes = label.split(' '); // Assume que há um espaço entre data e hora
+      
+      // Se encontrar mais de uma parte (ex: Data e Hora), pega a última (Hora)
+      if (partes.length > 1) {
+        // Remove os segundos se existirem (pega os primeiros 5 caracteres da hora: "07:11")
+        return partes[partes.length - 1].substring(0, 5); 
+      }
+      
+      return label;
+    });
+  }
+  
+  get labels(): string[] {
+    return this._labels;
+  }
 
-  // --- Referência ao Canvas ---
-  // Vamos "agarrar" o elemento <canvas> do nosso HTML para desenhar o gráfico
   @ViewChild('chartCanvas') chartCanvas: ElementRef | undefined;
   
   private chart: Chart | undefined;
 
   constructor(private modalCtrl: ModalController) { }
 
-  // Usamos AfterViewInit em vez de OnInit para garantir que o <canvas> já existe no HTML
   ngAfterViewInit() {
     this.criarGrafico();
   }
 
-  // Função para fechar o modal
   fechar() {
     this.modalCtrl.dismiss();
   }
 
-  // Função para criar o gráfico
   criarGrafico() {
     if (!this.chartCanvas) {
       console.error("Elemento canvas não encontrado!");
@@ -43,26 +61,38 @@ export class MetricChartModalComponent implements AfterViewInit {
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
 
-    // Usamos os dados que recebemos via @Input
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
     this.chart = new Chart(ctx, {
-      type: 'line', // Tipo de gráfico: linha
+      type: 'line',
       data: {
-        labels: this.labels, // Legendas do eixo X
+        labels: this._labels, // Usa as labels já curtas ("07:11", "07:12", etc.)
         datasets: [{
           label: this.titulo,
-          data: this.dados, // Valores do eixo Y
+          data: this.dados,
           fill: true,
-          backgroundColor: 'rgba(0, 121, 107, 0.2)', // Azul claro/verde (tom de água)
-          borderColor: '#00796b', // Azul/verde mais escuro
+          backgroundColor: 'rgba(0, 121, 107, 0.2)',
+          borderColor: '#00796b',
           borderWidth: 2,
-          tension: 0.3 // Deixa a linha ligeiramente curva
+          tension: 0.3
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
+          x: {
+            ticks: {
+              maxRotation: 0,
+              minRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 6 // Garante que não mostra demasiadas horas
+            }
+          },
           y: {
-            beginAtZero: false // O eixo Y não precisa começar no zero
+            beginAtZero: false
           }
         }
       }

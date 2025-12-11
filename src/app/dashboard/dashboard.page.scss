@@ -33,8 +33,13 @@ ion-card {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-inline: 0;
-  /* Garante que o card ocupe a altura total da coluna no grid */
-  height: 100%; 
+  /* Removemos o height: 100% global para não forçar esticamento indevido nos cards de baixo */
+  /* height: 100%;  <-- REMOVIDO/MOVIDO */
+}
+
+/* Apenas o card principal (Panorama) pode querer 100% se necessário, mas geralmente auto é melhor */
+.chart-card {
+  height: 100%;
 }
 
 /* --- CARTÕES DE MÉTRICAS (Os 3 de baixo) --- */
@@ -42,16 +47,23 @@ ion-card {
   cursor: pointer;
   transition: transform 0.2s ease;
   
-  /* Altura mínima fixa para garantir que todos tenham o mesmo tamanho */
+  /* Altura: AUTO para colar no gráfico, mas com min-height para alinhamento visual básico */
+  height: auto; 
   min-height: 220px; 
   
+  /* Importante: Remove margem inferior para colar no gráfico */
+  margin-bottom: 0 !important;
+  
+  /* Z-Index maior para ficar POR CIMA do gráfico quando ele desliza */
+  position: relative;
+  z-index: 10; 
+
   /* Flexbox para centralizar tudo vertical e horizontalmente */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  /* Wrapper interno para garantir centralização do conteúdo */
   .card-content-wrapper {
     width: 100%;
     display: flex;
@@ -68,13 +80,12 @@ ion-card {
   }
 
   ion-icon {
-    font-size: 3rem; /* Tamanho fixo do ícone do topo */
+    font-size: 3rem; 
     color: #00796b;
     margin-bottom: 8px;
   }
 
   ion-card-title {
-    /* Tamanho de fonte fixo e padronizado */
     font-size: 1.1rem !important; 
     font-weight: 500;
     color: #004d40;
@@ -89,18 +100,15 @@ ion-card {
     padding-top: 10px;
   }
 
-  /* O Valor numérico (ex: 7.2) ou Texto (Nível Ok) */
   .metric-value {
-    /* Tamanho grande e fixo para os números */
     font-size: 2.5rem; 
     font-weight: bold;
     color: #F57C00;
     line-height: 1;
   }
   
-  /* Ajuste específico para quando é texto (Nível Ok) */
   .metric-value.status-text {
-      font-size: 1.5rem; /* Um pouco menor para caber o texto */
+      font-size: 1.5rem; 
       display: flex;
       align-items: center;
       justify-content: center;
@@ -108,11 +116,11 @@ ion-card {
       
       ion-icon {
           font-size: 1.8rem;
-          margin-bottom: 0; /* Remove margem do ícone interno */
+          margin-bottom: 0; 
       }
       
       span {
-        white-space: nowrap; /* Evita quebra de linha indesejada */
+        white-space: nowrap; 
       }
   }
 
@@ -125,7 +133,6 @@ ion-card {
   }
 }
 
-/* Efeito de clique */
 .metric-card:active {
   transform: scale(0.98);
 }
@@ -149,20 +156,39 @@ ion-card {
 
 /* --- GRÁFICOS EXPANSÍVEIS --- */
 .chart-container {
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 12px;
-  margin: 0 4px 16px 4px;
+  background-color: rgba(255, 255, 255, 0.95); /* Fundo ligeiramente mais opaco */
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  /* Margens laterais para alinhar com a largura visual do card (que tem padding do grid) */
+  margin: 0 4px 16px 4px; 
+  
   max-height: 0;
   overflow: hidden;
-  transition: all 0.5s ease-out;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animação mais suave */
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.05); /* Sombra interna no topo */
+  
+  /* Z-Index menor para ficar POR BAIXO do card */
+  position: relative;
+  z-index: 1;
+  
+  /* Começa escondido debaixo do card */
+  opacity: 0; 
 }
 
 .chart-container.expanded {
-  max-height: 400px; /* Altura suficiente para abrir */
-  margin-top: -10px; /* Puxa um pouco para perto do card */
+  max-height: 400px; 
+  opacity: 1;
+  
+  /* O TRUQUE: Margem negativa para subir e encostar no card de cima */
+  margin-top: -20px; 
+  
+  /* Padding top extra para o conteúdo não ficar escondido atrás do card */
+  padding-top: 30px; 
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  
   margin-bottom: 20px;
-  padding: 10px;
 }
 
 .chart-wrapper {
